@@ -8,10 +8,13 @@ public class Memoria {
 
     //A chave vai ser o ID do processo
     //Os valores serão a posição e o tamanho
-    private static Map<Integer, Integer[]> processosMap = new HashMap<Integer, Integer[]>();
+    private static Map<Integer, Integer[]> processosMap = new HashMap<>();
 
     //O set é necessário para selecionar uma chave aleatória
-    private static Set<Integer> chaves = new HashSet<Integer>();
+    //(dá pra fazer com uma lista, mas com o set a operação é O(1) ao invés de O(n))
+    private static Set<Integer> chaves = new HashSet<>();
+
+    private static int posicaoUltimaAlocacao = 0;
 
     public static void zerarMemoria() {
         Arrays.fill(memoria, Boolean.FALSE);
@@ -27,13 +30,13 @@ public class Memoria {
         Arrays.fill(memoria, posicaoInicial, posicaoFinal, Boolean.FALSE);
         processosMap.remove(id);
         chaves.remove(id);
-        System.out.println("PROCESSO REMOVIDO: \nID: " + id +"\nTAMANHO: " + values[1] + "\nPOSICAO: " + posicaoInicial);
+        System.out.println("PROCESSO REMOVIDO: \nID: " + id + "\nTAMANHO: " + values[1] + "\nPOSICAO: " + posicaoInicial);
     }
 
-    public static String printMemoria(){
+    public static String printMemoria() {
         StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < TAMANHO; i++){
-            if(i % 30 == 0){
+        for (int i = 0; i < TAMANHO; i++) {
+            if (i % 30 == 0) {
                 buffer.append('\n');
             }
             buffer.append(memoria[i]).append(", ");
@@ -41,7 +44,8 @@ public class Memoria {
         return buffer.toString();
     }
 
-    private static void addProcesso(Processo processo, int posicao){
+    private static void alocarProcesso(Processo processo, int posicao, int tamanho) {
+        Arrays.fill(memoria, posicao, posicao + tamanho + 1, Boolean.TRUE);
         processosMap.put(processo.getId(), new Integer[]{posicao, processo.getTamAlocacao()});
         chaves.add(processo.getId());
     }
@@ -49,7 +53,7 @@ public class Memoria {
     public static void alocarProcessoFirstFit(Processo processo) {
         int ultimaPosicaoOcupada = 0;
         int numEspacosLivres = 0;
-        for (int i = 0; i <= TAMANHO; i++) {
+        for (int i = posicaoUltimaAlocacao; i <= TAMANHO; i++) {
             //Se a varredura chegar até o fim do array, o processo é
             //descartado por falta de espaço
             if (i == TAMANHO) {
@@ -61,10 +65,41 @@ public class Memoria {
             if (!memoria[i]) {
                 numEspacosLivres++;
                 if (numEspacosLivres == processo.getTamAlocacao()) {
-                    //Ocupar os espaços
-                    Arrays.fill(memoria, ultimaPosicaoOcupada, ultimaPosicaoOcupada + numEspacosLivres + 1, Boolean.TRUE);
-                    //Adicionar processo ao mapa e set com chaves
-                    addProcesso(processo, ultimaPosicaoOcupada);
+                    //Adicionar processo ao array, mapa e set com chaves
+                    alocarProcesso(processo, ultimaPosicaoOcupada, numEspacosLivres);
+                    break;
+                }
+            }
+            //Se não encontrar espaço o suficiente
+            else {
+                numEspacosLivres = 0;
+                ultimaPosicaoOcupada = i;
+            }
+        }
+    }
+
+    public static void alocarProcessoNextFit(Processo processo) {
+        int numEspacosLivres = 0;
+        int ultimaPosicaoOcupada = 0;
+        boolean chegouAoFim = false;
+        for (int i = posicaoUltimaAlocacao; i <= TAMANHO; i++) {
+            //Se a varredura chegar até o fim do array, o iterador volta ao início.
+            if (i == TAMANHO) {
+                i = 0;
+                chegouAoFim = true;
+            }
+            //Se o array inteiro foi varrido a partir da última posição
+            if (i == posicaoUltimaAlocacao && chegouAoFim) {
+                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                break;
+            }
+
+            //Checando o número de espaços livres até o tamanho do processo
+            if (!memoria[i]) {
+                numEspacosLivres++;
+                if (numEspacosLivres == processo.getTamAlocacao()) {
+                    //Adicionar processo ao array, mapa e set com chaves
+                    alocarProcesso(processo, ultimaPosicaoOcupada, numEspacosLivres);
                     break;
                 }
             }

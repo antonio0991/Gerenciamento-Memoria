@@ -11,14 +11,14 @@ public class Main {
                 //Opcional pra ver o processo funcionando
                 //Thread.sleep(500);
                 processo = GeradorDeProcessos.getNovoProcesso();
-                Memoria.alocarProcessoFirstFit(processo);
-                //Memoria.alocarProcessoNextFit(processo);
+                //Memoria.alocarProcessoFirstFit(processo);
+                Memoria.alocarProcessoNextFit(processo);
                 //Memoria.alocarProcessoBestFit(processo);
                 //Memoria.alocarProcessoWorstFit(processo);
 
                 //A cada 1 segundo, remover 1 ou 2 processos
-                if (i % 2 == 0 && i>0) {
-                    for (int j = 0; j<numProcessosRemovidos; j++){
+                if (i % 2 == 0 && i > 0) {
+                    for (int j = 0; j < numProcessosRemovidos; j++) {
                         Memoria.removerProcessoAleatorio();
                     }
                 }
