@@ -8,7 +8,8 @@ public class Main {
 
         try {
             for (int i = 0; i < 100; i++) {
-                Thread.sleep(500);
+                //Opcional pra ver o processo funcionando
+                //Thread.sleep(500);
                 processo = GeradorDeProcessos.getNovoProcesso();
                 Memoria.alocarProcessoFirstFit(processo);
                 //Memoria.alocarProcessoNextFit(processo);

@@ -2,7 +2,7 @@ import javax.management.InstanceNotFoundException;
 import java.util.*;
 
 public class Memoria {
-    private static final int TAMANHO = 300;
+    private static final int TAMANHO = 1000;
     //False = posição livre. True = posição ocupada
     private static boolean[] memoria = new boolean[TAMANHO];
 
