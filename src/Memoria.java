@@ -2,7 +2,7 @@ import javax.management.InstanceNotFoundException;
 import java.util.*;
 
 public class Memoria {
-    private static final int TAMANHO = 300;
+    private static final int TAMANHO = 1000;
     //False = posição livre. True = posição ocupada
     private static boolean[] memoria = new boolean[TAMANHO];
 
@@ -140,7 +140,49 @@ public class Memoria {
                 numEspacosLivres = 0;
             }
         }
-        alocarProcesso(processo, posicaoMaiorNumEspacosLivres, processo.getTamAlocacao());
+        if(encontrouEspaco){
+            alocarProcesso(processo, posicaoMaiorNumEspacosLivres, processo.getTamAlocacao());
+        }
+    }
+
+    public static void alocarProcessoBestFit(Processo processo) {
+        int numEspacosLivres = 0;
+        //O espaço mínimo vai ser o tamanho do processo
+        int maiorNumEspacosLivres = 0;
+        //Partindo do pressuposto que o best fit de um array vazio é o tamanho
+        //Como vamos pegar números cada vez menores, esse método funciona
+        int bestFit = TAMANHO;
+        int posicaOtima = 0;
+        boolean encontrouEspaco = false;
+        for (int i = 0; i < TAMANHO; i++) {
+            //Se a varredura chegar até o fim do array e não foi encontrado
+            // um slot, o processo descartado por falta de espaço
+            if (i == TAMANHO - 1 && !encontrouEspaco) {
+                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                break;
+            }
+
+            //Checando o número de espaços livres até o tamanho do processo
+            if (!memoria[i]) {
+                numEspacosLivres++;
+            }
+            //Se não encontrar espaço o suficiente
+            else {
+                numEspacosLivres = 0;
+            }
+            if (numEspacosLivres >= processo.getTamAlocacao() && numEspacosLivres < bestFit) {
+                bestFit = numEspacosLivres;
+                System.out.println("--------------BEST FIT-------------\n" + bestFit);
+                //Posição inicial do trecho da memória com o maior espaço livre
+                posicaOtima = i - numEspacosLivres + 1;
+                System.out.println("--------------POSICAO-------------\n" + posicaOtima);
+                encontrouEspaco = true;
+            }
+        }
+        if(encontrouEspaco){
+            alocarProcesso(processo, posicaOtima, processo.getTamAlocacao());
+        }
+
     }
 
 }

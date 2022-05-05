@@ -13,8 +13,9 @@ public class Main {
                 processo = GeradorDeProcessos.getNovoProcesso();
                 //Memoria.alocarProcessoFirstFit(processo);
                 //Memoria.alocarProcessoNextFit(processo);
-                //Memoria.alocarProcessoBestFit(processo);
-                Memoria.alocarProcessoWorstFit(processo);
+                Memoria.alocarProcessoBestFit(processo);
+                //Memoria.alocarProcessoWorstFit(processo);
+                System.out.println("\nNOVO PROCESSO!\nTamanho: " + processo.getTamAlocacao() + '\n' + "Memória: " + Memoria.printMemoria());
 
                 //A cada 1 segundo, remover 1 ou 2 processos
                 if (i % 2 == 0 && i > 0) {
@@ -23,7 +24,6 @@ public class Main {
                     }
                 }
 
-                System.out.println("\nNOVO PROCESSO!\nTamanho: " + processo.getTamAlocacao() + '\n' + "Memória: " + Memoria.printMemoria());
             }
         } catch (Exception e) {
             e.printStackTrace();
