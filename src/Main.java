@@ -9,12 +9,12 @@ public class Main {
         try {
             for (int i = 0; i < 100; i++) {
                 //Opcional pra ver o processo funcionando
-                //Thread.sleep(500);
+                Thread.sleep(500);
                 processo = GeradorDeProcessos.getNovoProcesso();
                 //Memoria.alocarProcessoFirstFit(processo);
-                Memoria.alocarProcessoNextFit(processo);
+                //Memoria.alocarProcessoNextFit(processo);
                 //Memoria.alocarProcessoBestFit(processo);
-                //Memoria.alocarProcessoWorstFit(processo);
+                Memoria.alocarProcessoWorstFit(processo);
 
                 //A cada 1 segundo, remover 1 ou 2 processos
                 if (i % 2 == 0 && i > 0) {

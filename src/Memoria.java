@@ -2,7 +2,7 @@ import javax.management.InstanceNotFoundException;
 import java.util.*;
 
 public class Memoria {
-    private static final int TAMANHO = 1000;
+    private static final int TAMANHO = 300;
     //False = posição livre. True = posição ocupada
     private static boolean[] memoria = new boolean[TAMANHO];
 
@@ -53,7 +53,7 @@ public class Memoria {
     public static void alocarProcessoFirstFit(Processo processo) {
         int ultimaPosicaoOcupada = 0;
         int numEspacosLivres = 0;
-        for (int i = posicaoUltimaAlocacao; i <= TAMANHO; i++) {
+        for (int i = 0; i <= TAMANHO; i++) {
             //Se a varredura chegar até o fim do array, o processo é
             //descartado por falta de espaço
             if (i == TAMANHO) {
@@ -66,7 +66,7 @@ public class Memoria {
                 numEspacosLivres++;
                 if (numEspacosLivres == processo.getTamAlocacao()) {
                     //Adicionar processo ao array, mapa e set com chaves
-                    alocarProcesso(processo, ultimaPosicaoOcupada, numEspacosLivres);
+                    alocarProcesso(processo, ultimaPosicaoOcupada, processo.getTamAlocacao());
                     break;
                 }
             }
@@ -99,7 +99,7 @@ public class Memoria {
                 numEspacosLivres++;
                 if (numEspacosLivres == processo.getTamAlocacao()) {
                     //Adicionar processo ao array, mapa e set com chaves
-                    alocarProcesso(processo, ultimaPosicaoOcupada, numEspacosLivres);
+                    alocarProcesso(processo, ultimaPosicaoOcupada, processo.getTamAlocacao());
                     break;
                 }
             }
@@ -109,6 +109,38 @@ public class Memoria {
                 ultimaPosicaoOcupada = i;
             }
         }
+    }
+
+    public static void alocarProcessoWorstFit(Processo processo) {
+        int numEspacosLivres = 0;
+        //O espaço mínimo vai ser o tamanho do processo
+        int maiorNumEspacosLivres = processo.getTamAlocacao();
+        int posicaoMaiorNumEspacosLivres = 0;
+        boolean encontrouEspaco = false;
+        for (int i = 0; i < TAMANHO; i++) {
+            //Se a varredura chegar até o fim do array, o processo é
+            //descartado por falta de espaço
+            if (i == TAMANHO - 1 && !encontrouEspaco) {
+                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                break;
+            }
+
+            //Checando o número de espaços livres até o tamanho do processo
+            if (!memoria[i]) {
+                numEspacosLivres++;
+                if (numEspacosLivres >= maiorNumEspacosLivres) {
+                    maiorNumEspacosLivres = numEspacosLivres;
+                    //Posição inicial do trecho da memória com o maior espaço livre
+                    posicaoMaiorNumEspacosLivres = i - numEspacosLivres + 1;
+                    encontrouEspaco = true;
+                }
+            }
+            //Se não encontrar espaço o suficiente
+            else {
+                numEspacosLivres = 0;
+            }
+        }
+        alocarProcesso(processo, posicaoMaiorNumEspacosLivres, processo.getTamAlocacao());
     }
 
 }
