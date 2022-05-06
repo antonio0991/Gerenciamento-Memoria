@@ -4,7 +4,7 @@ import java.util.*;
 public class Memoria {
     private static final int TAMANHO = 1000;
     //False = posição livre. True = posição ocupada
-    private static boolean[] memoria = new boolean[TAMANHO];
+    private static Boolean[] memoria = new Boolean[TAMANHO];
 
     //A chave vai ser o ID do processo
     //Os valores serão a posição e o tamanho
@@ -16,21 +16,31 @@ public class Memoria {
 
     private static int posicaoUltimaAlocacao = 0;
 
+    private static double totalProcessosDescartados = 0;
+    private static List<Double> taxasOcupacao = new ArrayList<>();
+
     public static void zerarMemoria() {
         Arrays.fill(memoria, Boolean.FALSE);
+        totalProcessosDescartados = 0;
+        taxasOcupacao = new ArrayList<>();
+        posicaoUltimaAlocacao = 0;
+        processosMap = new HashMap<>();
+        chaves = new HashSet<>();
     }
 
     public static void removerProcessoAleatorio() throws InstanceNotFoundException {
         //Pegando uma chave aleatória
-        int id = chaves.stream().skip(new Random().nextInt(chaves.size())).findFirst().orElseThrow(InstanceNotFoundException::new);
-        Integer[] values = processosMap.get(id);
-        int posicaoInicial = values[0];
-        int posicaoFinal = posicaoInicial + values[1] + 1;
-        //Libera espaços referentes ao processo
-        Arrays.fill(memoria, posicaoInicial, posicaoFinal, Boolean.FALSE);
-        processosMap.remove(id);
-        chaves.remove(id);
-        System.out.println("PROCESSO REMOVIDO: \nID: " + id + "\nTAMANHO: " + values[1] + "\nPOSICAO: " + posicaoInicial);
+        if(!chaves.isEmpty()){
+            int id = chaves.stream().skip(new Random().nextInt(chaves.size())).findFirst().orElseThrow(InstanceNotFoundException::new);
+            Integer[] values = processosMap.get(id);
+            int posicaoInicial = values[0];
+            int posicaoFinal = posicaoInicial + values[1] + 1;
+            //Libera espaços referentes ao processo
+            Arrays.fill(memoria, posicaoInicial, posicaoFinal - 1, Boolean.FALSE);
+            processosMap.remove(id);
+            chaves.remove(id);
+            System.out.println("PROCESSO REMOVIDO: \nID: " + id + "\nTAMANHO: " + values[1] + "\nPOSICAO: " + posicaoInicial);
+        }
     }
 
     public static String printMemoria() {
@@ -45,9 +55,17 @@ public class Memoria {
     }
 
     private static void alocarProcesso(Processo processo, int posicao, int tamanho) {
-        Arrays.fill(memoria, posicao, posicao + tamanho + 1, Boolean.TRUE);
+        Arrays.fill(memoria, posicao, posicao + tamanho, Boolean.TRUE);
         processosMap.put(processo.getId(), new Integer[]{posicao, processo.getTamAlocacao()});
         chaves.add(processo.getId());
+        //Aqui ele filtra o array por valores true e divide o length dele pelo tamanho da memória
+        //Uso de array para poder calcular a média ao final do processo
+        taxasOcupacao.add((double) ((Arrays.stream(memoria).filter(m -> m).toArray().length))/TAMANHO);
+    }
+
+    private static void descartarProcesso() {
+        System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+        totalProcessosDescartados++;
     }
 
     public static void alocarProcessoFirstFit(Processo processo) {
@@ -57,7 +75,7 @@ public class Memoria {
             //Se a varredura chegar até o fim do array, o processo é
             //descartado por falta de espaço
             if (i == TAMANHO) {
-                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                descartarProcesso();
                 break;
             }
 
@@ -90,7 +108,7 @@ public class Memoria {
             }
             //Se o array inteiro foi varrido a partir da última posição
             if (i == posicaoUltimaAlocacao && chegouAoFim) {
-                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                descartarProcesso();
                 break;
             }
 
@@ -121,7 +139,7 @@ public class Memoria {
             //Se a varredura chegar até o fim do array, o processo é
             //descartado por falta de espaço
             if (i == TAMANHO - 1 && !encontrouEspaco) {
-                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                descartarProcesso();
                 break;
             }
 
@@ -140,7 +158,7 @@ public class Memoria {
                 numEspacosLivres = 0;
             }
         }
-        if(encontrouEspaco){
+        if (encontrouEspaco) {
             alocarProcesso(processo, posicaoMaiorNumEspacosLivres, processo.getTamAlocacao());
         }
     }
@@ -158,7 +176,7 @@ public class Memoria {
             //Se a varredura chegar até o fim do array e não foi encontrado
             // um slot, o processo descartado por falta de espaço
             if (i == TAMANHO - 1 && !encontrouEspaco) {
-                System.out.println("\nPROCESSO DESCARTADO POR FALTA DE ESPAÇO!");
+                descartarProcesso();
                 break;
             }
 
@@ -179,10 +197,21 @@ public class Memoria {
                 encontrouEspaco = true;
             }
         }
-        if(encontrouEspaco){
+        if (encontrouEspaco) {
             alocarProcesso(processo, posicaOtima, processo.getTamAlocacao());
         }
 
     }
 
+    public static double getTaxaDescarte() {
+        return totalProcessosDescartados / GeradorDeProcessos.getIdCont() * 100;
+    }
+
+    public static double getTaxaOcupacao() {
+        double total = 0;
+        for (double taxa : taxasOcupacao) {
+            total += taxa;
+        }
+        return total/taxasOcupacao.size() * 100;
+    }
 }

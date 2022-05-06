@@ -6,4 +6,8 @@ public class GeradorDeProcessos {
         return new Processo(idCont++);
     }
 
+    public static int getIdCont() {
+        return idCont;
+    }
+
 }
